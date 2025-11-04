@@ -38,6 +38,8 @@
       "@polkadot/app-explorer/*": [ "packages/page-explorer/src/*" ],
       "@polkadot/app-gilt": [ "packages/page-gilt/src" ],
       "@polkadot/app-gilt/*": [ "packages/page-gilt/src/*" ],
+      "@polkadot/app-gpu-tco": [ "packages/page-gpu-tco/src" ],
+      "@polkadot/app-gpu-tco/*": [ "packages/page-gpu-tco/src/*" ],
       "@polkadot/app-i18n": [ "packages/page-i18n/src" ],
       "@polkadot/app-i18n/*": [ "packages/page-i18n/src/*" ],
       "@polkadot/app-js": [ "packages/page-js/src" ],
