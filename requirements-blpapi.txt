@@ -1,0 +1,6 @@
+# Bloomberg API Python package
+# Note: Requires authentication to Bloomberg's private repository
+# See BLPAPI_INSTALLATION.md for installation instructions
+
+--index-url https://blpapi.bloomberg.com/repository/releases/python/simple/
+blpapi
