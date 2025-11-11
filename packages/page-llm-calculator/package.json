@@ -1,0 +1,19 @@
+{
+  "bugs": "https://github.com/polkadot-js/apps/issues",
+  "homepage": "https://github.com/polkadot-js/apps/tree/master/packages/page-llm-calculator#readme",
+  "license": "Apache-2.0",
+  "name": "@polkadot/app-llm-calculator",
+  "private": true,
+  "repository": {
+    "directory": "packages/page-llm-calculator",
+    "type": "git",
+    "url": "https://github.com/polkadot-js/apps.git"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.98.2-127",
+  "dependencies": {
+    "@babel/runtime": "^7.16.3",
+    "@polkadot/react-components": "^0.98.2-127"
+  }
+}
