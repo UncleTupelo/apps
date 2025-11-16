@@ -16,7 +16,6 @@ import democracy from './democracy';
 import explorer from './explorer';
 import extrinsics from './extrinsics';
 import gilt from './gilt';
-import gpuTco from './gpu-tco';
 import js from './js';
 import membership from './membership';
 import parachains from './parachains';
@@ -61,7 +60,6 @@ export default function create (t: TFunction): Routes {
     signing(t),
     sudo(t),
     js(t),
-    gpuTco(t),
     settings(t)
   ];
 }
