@@ -4,11 +4,12 @@
 import type { TFunction } from 'i18next';
 import type { Route } from './types';
 
-import Modal from '@polkadot/app-parachains/Teleport';
+import Modal from '@polkadot/app-parachains/TeleportWrapper';
+import TeleportComponent from '@polkadot/app-parachains/Teleport';
 
 export default function create (t: TFunction): Route {
   return {
-    Component: Modal,
+    Component: TeleportComponent,
     Modal,
     display: {
       isHidden: false,

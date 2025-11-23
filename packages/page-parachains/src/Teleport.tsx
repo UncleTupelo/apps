@@ -7,18 +7,20 @@ import type { LinkOption } from '@polkadot/apps-config/endpoints/types';
 import type { Option } from '@polkadot/apps-config/settings/types';
 import type { XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { getTeleportWeight } from '@polkadot/apps-config';
-import { ChainImg, Dropdown, InputAddress, InputBalance, MarkWarning, Modal, Spinner, TxButton } from '@polkadot/react-components';
+import { Button, ChainImg, Dropdown, InputAddress, InputBalance, MarkWarning, Modal, Spinner, TxButton } from '@polkadot/react-components';
 import { useApi, useApiUrl, useTeleport, useWeightFee } from '@polkadot/react-hooks';
 import { Available } from '@polkadot/react-query';
-import { BN_ZERO, isFunction } from '@polkadot/util';
+import { BN, BN_ZERO, isFunction } from '@polkadot/util';
 
+import { deleteTeleportSession, generateSessionId, loadTeleportSession, markSessionCompleted, saveTeleportSession } from './teleportSessions';
 import { useTranslation } from './translate';
 
 interface Props {
   onClose: () => void;
+  sessionId?: string;
 }
 
 const INVALID_PARAID = Number.MAX_SAFE_INTEGER;
@@ -43,14 +45,68 @@ function createOption ({ info, paraId, text }: LinkOption): Option {
   };
 }
 
-function Teleport ({ onClose }: Props): React.ReactElement<Props> | null {
+function Teleport ({ onClose, sessionId: propSessionId }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
   const { api } = useApi();
   const [amount, setAmount] = useState<BN | undefined>(BN_ZERO);
   const [recipientId, setRecipientId] = useState<string | null>(null);
   const [senderId, setSenderId] = useState<string | null>(null);
   const [recipientParaId, setParaId] = useState(INVALID_PARAID);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(propSessionId || null);
+  const [sessionSaved, setSessionSaved] = useState(false);
   const { allowTeleport, destinations, isParaTeleport, oneWay } = useTeleport();
+
+  // Load session data if sessionId is provided
+  useEffect((): void => {
+    if (currentSessionId) {
+      const session = loadTeleportSession(currentSessionId);
+
+      if (session && !session.completed) {
+        setSenderId(session.senderId);
+        setRecipientId(session.recipientId);
+        setParaId(session.recipientParaId);
+        setAmount(session.amount ? new BN(session.amount) : BN_ZERO);
+        setSessionSaved(true);
+      }
+    }
+  }, [currentSessionId]);
+
+  const handleSaveSession = (): void => {
+    const sessionId = currentSessionId || generateSessionId();
+
+    saveTeleportSession({
+      amount: amount?.toString() || '0',
+      id: sessionId,
+      recipientId,
+      recipientParaId,
+      senderId,
+      timestamp: Date.now()
+    });
+
+    setCurrentSessionId(sessionId);
+    setSessionSaved(true);
+  };
+
+  const handleClearSession = (): void => {
+    if (currentSessionId) {
+      deleteTeleportSession(currentSessionId);
+    }
+
+    setCurrentSessionId(null);
+    setSessionSaved(false);
+    setSenderId(null);
+    setRecipientId(null);
+    setAmount(BN_ZERO);
+    setParaId(INVALID_PARAID);
+  };
+
+  const handleTeleportSuccess = (): void => {
+    if (currentSessionId) {
+      markSessionCompleted(currentSessionId);
+    }
+
+    onClose();
+  };
 
   const [destWeight, call] = useMemo(
     (): [number, SubmittableExtrinsicFunction<'promise'>] => {
@@ -131,15 +187,16 @@ function Teleport ({ onClose }: Props): React.ReactElement<Props> | null {
             }
             onChange={setSenderId}
             type='account'
+            value={senderId}
           />
         </Modal.Columns>
         {chainOpts.length !== 0 && (
           <Modal.Columns hint={t<string>('The destination chain for this asset teleport. The transferred value will appear on this chain.')}>
             <Dropdown
-              defaultValue={chainOpts[0].value}
               label={t<string>('destination chain')}
               onChange={setParaId}
               options={chainOpts}
+              value={recipientParaId === INVALID_PARAID ? chainOpts[0]?.value : recipientParaId}
             />
             {!isParaTeleport && oneWay.includes(recipientParaId) && (
               <MarkWarning content={t<string>('Currently this is a one-way transfer since the on-chain runtime functionality to send the funds from the destination chain back to this account not yet available.')} />
@@ -151,6 +208,7 @@ function Teleport ({ onClose }: Props): React.ReactElement<Props> | null {
             label={t<string>('send to address')}
             onChange={setRecipientId}
             type='allPlus'
+            value={recipientId}
           />
         </Modal.Columns>
         <Modal.Columns
@@ -167,6 +225,7 @@ function Teleport ({ onClose }: Props): React.ReactElement<Props> | null {
             isZeroable
             label={t<string>('amount')}
             onChange={setAmount}
+            value={amount}
           />
           {destApi
             ? (
@@ -193,12 +252,30 @@ function Teleport ({ onClose }: Props): React.ReactElement<Props> | null {
         </Modal.Columns>
       </Modal.Content>
       <Modal.Actions>
+        <Button
+          icon='save'
+          isDisabled={!senderId || !recipientId || !amount}
+          label={sessionSaved ? t<string>('Session Saved') : t<string>('Save Session')}
+          onClick={handleSaveSession}
+        />
+        {sessionSaved && (
+          <Button
+            icon='trash'
+            label={t<string>('Clear Session')}
+            onClick={handleClearSession}
+          />
+        )}
+        {currentSessionId && (
+          <div style={{ fontSize: '0.9em', opacity: 0.7, padding: '0 1em' }}>
+            Session ID: {currentSessionId}
+          </div>
+        )}
         <TxButton
           accountId={senderId}
           icon='share-square'
           isDisabled={!allowTeleport || !hasAvailable || !recipientId || !amount || !destApi || (!isParaTeleport && recipientParaId === INVALID_PARAID)}
           label={t<string>('Teleport')}
-          onStart={onClose}
+          onStart={handleTeleportSuccess}
           params={params}
           tx={call}
         />
