@@ -1,15 +1,24 @@
 {
   "short_name": "Polkadot Apps",
-  "name": "Apps for interacting with a Polkadot node",
+  "name": "Polkadot Apps - Network Portal & LLM Calculator",
+  "description": "A portal into the Polkadot network with tools including LLM Training Time and Cost Calculator",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
+    },
+    {
+      "src": "llm-calculator-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": "index.html",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#667eea",
+  "background_color": "#1a1b20",
+  "categories": ["utilities", "developer tools", "productivity"]
 }

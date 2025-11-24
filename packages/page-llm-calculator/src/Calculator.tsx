@@ -262,10 +262,19 @@ function LLMCalculator ({ className }: Props): React.ReactElement<Props> {
 export default React.memo(styled(LLMCalculator)`
   padding: 1.5rem;
 
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
+
   h1 {
     margin-bottom: 1.5rem;
     font-size: 1.8rem;
     font-weight: 600;
+
+    @media (max-width: 480px) {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
   }
 
   h2 {
@@ -273,12 +282,21 @@ export default React.memo(styled(LLMCalculator)`
     margin-bottom: 1rem;
     font-size: 1.3rem;
     font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 1.1rem;
+      margin-top: 1rem;
+    }
   }
 
   h3 {
     margin-bottom: 0.75rem;
     font-size: 1.1rem;
     font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 1rem;
+    }
   }
 
   .calculator-container {
@@ -288,6 +306,11 @@ export default React.memo(styled(LLMCalculator)`
 
     @media (max-width: 1024px) {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      gap: 1rem;
     }
   }
 
@@ -296,6 +319,10 @@ export default React.memo(styled(LLMCalculator)`
     background: var(--bg-page);
     border-radius: 0.5rem;
     border: 1px solid var(--border-table);
+
+    @media (max-width: 480px) {
+      padding: 1rem;
+    }
   }
 
   .results-section {
@@ -303,6 +330,10 @@ export default React.memo(styled(LLMCalculator)`
     background: var(--bg-page);
     border-radius: 0.5rem;
     border: 1px solid var(--border-table);
+
+    @media (max-width: 480px) {
+      padding: 1rem;
+    }
   }
 
   .input-group {
@@ -356,6 +387,10 @@ export default React.memo(styled(LLMCalculator)`
     border-radius: 0.375rem;
     border: 1px solid var(--border-table);
 
+    @media (max-width: 480px) {
+      padding: 1rem;
+    }
+
     &.highlight {
       background: var(--bg-tabs);
       border-color: var(--color-button);
@@ -366,6 +401,10 @@ export default React.memo(styled(LLMCalculator)`
       font-size: 0.9rem;
       color: var(--color-summary);
       margin-bottom: 0.5rem;
+
+      @media (max-width: 480px) {
+        font-size: 0.8rem;
+      }
     }
 
     .result-value {
@@ -373,11 +412,20 @@ export default React.memo(styled(LLMCalculator)`
       font-weight: 600;
       color: var(--color-text);
       margin-bottom: 0.25rem;
+      word-break: break-word;
+
+      @media (max-width: 480px) {
+        font-size: 1.25rem;
+      }
     }
 
     .result-detail {
       font-size: 0.85rem;
       color: var(--color-summary);
+
+      @media (max-width: 480px) {
+        font-size: 0.75rem;
+      }
     }
   }
 

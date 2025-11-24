@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#grad)"/>
+  <!-- Calculator body -->
+  <rect x="96" y="80" width="320" height="352" rx="24" fill="#ffffff" opacity="0.95"/>
+  <!-- Display -->
+  <rect x="120" y="104" width="272" height="80" rx="12" fill="#1a1a2e"/>
+  <!-- AI brain icon in display -->
+  <circle cx="256" cy="144" r="24" fill="none" stroke="#00d4aa" stroke-width="3"/>
+  <path d="M244 136 Q256 124 268 136 M244 152 Q256 164 268 152" stroke="#00d4aa" stroke-width="3" fill="none"/>
+  <circle cx="248" cy="144" r="3" fill="#00d4aa"/>
+  <circle cx="264" cy="144" r="3" fill="#00d4aa"/>
+  <!-- Calculator buttons -->
+  <rect x="120" y="208" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="188" y="208" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="256" y="208" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="324" y="208" width="56" height="48" rx="8" fill="#667eea"/>
+
+  <rect x="120" y="268" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="188" y="268" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="256" y="268" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="324" y="268" width="56" height="48" rx="8" fill="#667eea"/>
+
+  <rect x="120" y="328" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="188" y="328" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="256" y="328" width="56" height="48" rx="8" fill="#e8e8e8"/>
+  <rect x="324" y="328" width="56" height="48" rx="8" fill="#00d4aa"/>
+  <!-- GPU chip symbol -->
+  <rect x="180" y="388" width="152" height="32" rx="4" fill="#1a1a2e"/>
+  <text x="256" y="410" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#00d4aa" text-anchor="middle">GPU</text>
+</svg>
