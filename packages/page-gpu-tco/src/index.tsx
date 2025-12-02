@@ -1,15 +1,18 @@
 // Copyright 2017-2025 @polkadot/app-gpu-tco authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import CostBreakdownChart from './components/CostBreakdownChart';
 import InputSection from './components/InputSection';
+import ROICard from './components/ROICard';
+import ScenarioManager from './components/ScenarioManager';
 import SummaryCard from './components/SummaryCard';
 import { DEFAULT_INPUTS, GPU_PRESETS } from './types';
 import type { CapitalExpenditure, GPUModel, OperatingExpenditure, TCOInputs } from './types';
 import { calculateTCO, formatCurrency, formatNumber, formatPower } from './utils/calculations';
+import { loadCurrentConfig, saveCurrentConfig } from './utils/storage';
 
 interface Props {
   basePath: string;
@@ -17,10 +20,20 @@ interface Props {
 }
 
 function GpuTcoApp ({ basePath, className }: Props): React.ReactElement<Props> {
-  const [inputs, setInputs] = useState<TCOInputs>(DEFAULT_INPUTS);
+  const [inputs, setInputs] = useState<TCOInputs>(() => {
+    // Try to load saved configuration on mount
+    const saved = loadCurrentConfig();
+
+    return saved || DEFAULT_INPUTS;
+  });
 
   // Calculate TCO results
   const results = useMemo(() => calculateTCO(inputs), [inputs]);
+
+  // Auto-save configuration when inputs change
+  useEffect(() => {
+    saveCurrentConfig(inputs);
+  }, [inputs]);
 
   // Handler for GPU model selection
   const handleGPUModelChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -38,32 +51,72 @@ function GpuTcoApp ({ basePath, className }: Props): React.ReactElement<Props> {
 
   // Handler for CapEx changes
   const handleCapexChange = useCallback((field: keyof CapitalExpenditure, value: number) => {
+    // Validate input (ensure non-negative, ensure counts are integers)
+    const isCount = field === 'gpuCount' || field === 'serverCount';
+    const validated = isCount ? Math.max(1, Math.floor(value)) : Math.max(0, value);
+
     setInputs((prev) => ({
       ...prev,
       capex: {
         ...prev.capex,
-        [field]: value
+        [field]: validated
       }
     }));
   }, []);
 
   // Handler for OpEx changes
   const handleOpexChange = useCallback((field: keyof OperatingExpenditure, value: number) => {
+    // Validate input (ensure non-negative, percentages stay reasonable)
+    const isPercentage = field === 'coolingOverhead';
+    const validated = isPercentage ? Math.max(0, Math.min(2, value)) : Math.max(0, value);
+
     setInputs((prev) => ({
       ...prev,
       opex: {
         ...prev.opex,
-        [field]: value
+        [field]: validated
       }
     }));
   }, []);
 
   // Handler for general input changes
   const handleInputChange = useCallback((field: keyof TCOInputs, value: number) => {
+    // Validate input based on field type
+    let validated = value;
+
+    if (field === 'utilizationRate') {
+      validated = Math.max(0, Math.min(1, value));
+    } else if (field === 'timeframe' || field === 'depreciationPeriod') {
+      validated = Math.max(1, Math.min(20, Math.floor(value)));
+    }
+
     setInputs((prev) => ({
       ...prev,
-      [field]: value
+      [field]: validated
     }));
+  }, []);
+
+  // Handler for loading scenarios
+  const handleLoadScenario = useCallback((scenarioInputs: TCOInputs) => {
+    setInputs(scenarioInputs);
+  }, []);
+
+  // Handler for resetting to defaults
+  const handleResetToDefaults = useCallback(() => {
+    if (confirm('Are you sure you want to reset all inputs to default values?')) {
+      setInputs(DEFAULT_INPUTS);
+    }
+  }, []);
+
+  // Input validation helper
+  const validateNumber = useCallback((value: number, min = 0, max?: number): number => {
+    let validated = Math.max(min, value);
+
+    if (max !== undefined) {
+      validated = Math.min(max, validated);
+    }
+
+    return validated;
   }, []);
 
   // Prepare chart data for CapEx breakdown
@@ -90,8 +143,16 @@ function GpuTcoApp ({ basePath, className }: Props): React.ReactElement<Props> {
   return (
     <StyledMain className={className}>
       <Header>
-        <Title>GPU Datacenter TCO Dashboard</Title>
-        <Subtitle>Total Cost of Ownership Analysis and Planning</Subtitle>
+        <HeaderTop>
+          <HeaderText>
+            <Title>GPU Datacenter TCO Dashboard</Title>
+            <Subtitle>Total Cost of Ownership Analysis and Planning</Subtitle>
+          </HeaderText>
+          <ResetButton onClick={handleResetToDefaults}>
+            <i className="fas fa-undo" />
+            Reset to Defaults
+          </ResetButton>
+        </HeaderTop>
       </Header>
 
       {/* Summary Cards */}
@@ -347,6 +408,16 @@ function GpuTcoApp ({ basePath, className }: Props): React.ReactElement<Props> {
         />
       </ChartsSection>
 
+      {/* ROI Analysis */}
+      <ROISection>
+        <ROICard
+          breakEvenYears={results.roi.breakEvenYears}
+          paybackPeriod={results.roi.paybackPeriod}
+          annualTCO={results.annualTCO}
+          costPerGPUHour={results.costPerGPUHour}
+        />
+      </ROISection>
+
       {/* TCO Summary Table */}
       <TableSection>
         <InputSection title="TCO Summary">
@@ -384,6 +455,15 @@ function GpuTcoApp ({ basePath, className }: Props): React.ReactElement<Props> {
           </SummaryTable>
         </InputSection>
       </TableSection>
+
+      {/* Scenario Management */}
+      <ScenarioSection>
+        <ScenarioManager
+          currentInputs={inputs}
+          currentResults={results}
+          onLoadScenario={handleLoadScenario}
+        />
+      </ScenarioSection>
     </StyledMain>
   );
 }
@@ -398,6 +478,22 @@ const Header = styled.div`
   margin-bottom: 2rem;
 `;
 
+const HeaderTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const HeaderText = styled.div`
+  flex: 1;
+`;
+
 const Title = styled.h1`
   font-size: 2rem;
   font-weight: 700;
@@ -409,6 +505,30 @@ const Subtitle = styled.p`
   font-size: 1rem;
   color: var(--color-summary);
   margin: 0;
+`;
+
+const ResetButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-input);
+  border-radius: 0.25rem;
+  background: var(--bg-input);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--bg-tabs);
+    border-color: var(--color-label);
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
 `;
 
 const SummaryGrid = styled.div`
@@ -492,9 +612,21 @@ const ChartsSection = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ROISection = styled.div`
+  margin-bottom: 2rem;
 `;
 
 const TableSection = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const ScenarioSection = styled.div`
   margin-bottom: 2rem;
 `;
 
